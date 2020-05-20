@@ -1,0 +1,47 @@
+{
+  "name": "@moosty/lisk-extended-api",
+  "version": "0.0.7",
+  "description": "",
+  "main": "dist-node/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moosty/lisk-extended-api.git"
+  },
+  "author": "Moosty <info@moosty.com>",
+  "license": "GPL-3.0",
+  "scripts": {
+    "test": "jest --coverage --verbose",
+    "test:ci": "jest --config ./jest.config.js",
+    "prebuild": "rm -r dist-node | rm tsconfig.tsbuildinfo | mkdir dist-node | true",
+    "build": "tsc",
+    "build:check": "node -e \"require('./dist-node')\""
+  },
+  "dependencies": {
+    "@liskhq/lisk-cryptography": "^2.5.0-alpha.0",
+    "@liskhq/lisk-transactions": "^4.0.0-alpha.0",
+    "@liskhq/lisk-validator": "^0.4.0-alpha.0",
+    "cors": "^2.8.5",
+    "lisk-framework": "^0.6.0-alpha.0",
+    "lisk-sdk": "^4.0.0-alpha.0",
+    "tslib": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^13.7.1",
+    "ts-jest": "^25.4.0",
+    "ts-node": "^8.9.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.8.3"
+  },
+  "bugs": {
+    "url": "https://github.com/moosty/lisk-extended-api/issues"
+  },
+  "homepage": "https://github.com/moosty/lisk-extended-api#readme",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "lisk",
+    "lisk module",
+    "extended api"
+  ]
+}
