@@ -1,4 +1,5 @@
 import express from 'express';
+import _ from 'lodash';
 import cors from 'cors';
 import {createStorageComponent} from 'lisk-framework/src/components/storage';
 import {createLoggerComponent} from 'lisk-framework/src/components/logger';
@@ -15,7 +16,6 @@ export class ExtendedHTTPApi {
     public scope;
 
     constructor(channel, options) {
-        options.root = __dirname; // TODO: See wy root comes defined for the chain module.
         this.channel = channel;
         this.options = options;
         this.logger = null;
@@ -42,10 +42,6 @@ export class ExtendedHTTPApi {
         const dbLogger = {};
         const storage = createStorageComponent(storageConfig, dbLogger);
 
-        const applicationState = await this.channel.invoke(
-            'app:getApplicationState',
-        );
-
         // Setup scope
         this.scope = {
             components: {
@@ -53,64 +49,68 @@ export class ExtendedHTTPApi {
                 storage,
             },
             channel: this.channel,
-            config: this.options,
-            lastCommitId: this.options.lastCommitId,
-            buildVersion: this.options.buildVersion,
-            applicationState,
         };
 
         // Bootstrap Storage component
-        await bootstrapStorage(this.scope, this.options.constants.activeDelegates);
+        await bootstrapStorage(this.scope, this.options.limit || 100);
         this.scope.components.storage.entities.Transaction.filters.asset_contains = "asset @> '${asset_contains:value}'::jsonb";
         this.scope.components.storage.entities.Transaction.filters.asset_exists = "asset ? '${asset_exists:value}'";
+        this.scope.components.storage.entities.Account.filters.asset_contains = "asset @> '${asset_contains:value}'::jsonb";
+        this.scope.components.storage.entities.Account.filters.asset_exists = "asset ? '${asset_exists:value}'";
 
-        console.log(await this.scope.components.storage.entities.Transaction.get({
-            asset_contains: `{"username": "developer"}`
-        }))
-        console.log(this.scope.components.storage.entities.Account)
-
-        app.get('/extended/username/:username', async (req, res) => {
-            const result = await this.scope.components.storage.entities.Account.get({
-                // asset_contains: `{"username": "${req.params.username}"}`
-                username_like: `%${req.params.username}%`
-            });
-            res.send(result);
-        });
-
-        app.get('/extended/accounts/:publicKey', async (req, res) => {
-            res.send(req.params.publicKey)
-        });
-
-        app.get('/extended/contracts/:publicKey', async (req, res) => {
-            const result = await this.scope.components.storage.entities.Account.get([
-                {asset_contains: `{"senderPublicKey": "${req.params.publicKey}"}`},
-                {asset_contains: `{"recipientPublicKey": "${req.params.publicKey}"}`},
-            ]);
-            res.send(result);
-        });
-
-        app.get('/extended/transactions/:contractPublicKey', async (req, res) => {
-            const contract = await this.scope.components.storage.entities.Account.get(
-                {publicKey: req.params.contractPublicKey},
-            );
-            if (contract[0].asset.initialTx) {
-                const result = await this.scope.components.storage.entities.Transaction.get([
-                    {asset_contains: `{"contractPublicKey": "${req.params.contractPublicKey}"}`},
-                    {id: contract[0].asset.initialTx},
-                ], {limit: 100, extended: true});
-                res.send(result);
+        app.get('/extended-api/:type', async (req, res) => {
+            const limit = req.query.limit || 10;
+            const offset = req.query.offset || 0;
+            const type = req.params.type === "accounts" ? "Account" : req.params.type === "transactions" ? "Transaction" : null;
+            if (!type) {
+                res.send({
+                    "description": "Page not found, use /extended-api/accounts or /extended-api/transactions"
+                })
             } else {
-                res.send([]);
+                if (this.options.assets && this.options.assets.indexOf(req.query.asset) > -1) {
+                    let filters: Array<any> = [];
+                    if (req.query.asset) {
+                        if (!req.query.contains) {
+                            filters.push({asset_exists: req.query.asset});
+                        }
+                        if (req.query.contains) {
+                            let obj = {};
+                            const contains = !isNaN(req.query.contains) ? Number(req.query.contains) : req.query.contains;
+                            _.set(obj, req.query.asset, contains);
+                            filters.push({asset_contains: JSON.stringify(obj)});
+                        }
+                    }
+
+                    const result = await this.scope.components.storage.entities[type].get(filters, {
+                        limit,
+                        offset,
+                        extended: true,
+                    })
+                    res.send({
+                        "meta": {
+                            limit: limit,
+                            offset: offset,
+                        },
+                        "data": result,
+                        "links": {},
+                    });
+                } else {
+                    res.status(400).send({
+                        "description": "Asset not allowed",
+                        "allowedAssets": this.options.assets || []
+                    })
+                }
+
             }
         });
 
-        app.listen(2020);
+        app.listen(this.options.port || 2020);
     }
 
     async cleanup() {
         const {components} = this.scope;
 
-        this.logger.info('Cleaning HTTP API...');
+        this.logger.info('Cleaning extended HTTP API...');
 
         try {
             if (components !== undefined) {
@@ -123,6 +123,6 @@ export class ExtendedHTTPApi {
         } catch (componentCleanupError) {
             this.logger.error(componentCleanupError);
         }
-        this.logger.info('Cleaned up successfully');
+        this.logger.info('Cleaned up extended HTTP API successfully');
     }
 };
