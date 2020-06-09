@@ -1,8 +1,7 @@
-import { Account, Transacton } from "lisk-framework/src/components/storage/entities";
+import { Account } from "lisk-framework/src/components/storage/entities";
 
 export const bootstrapStorage =  async ({ components: { storage, logger } }, accountLimit) => {
     try {
-        console.log(Account, Transacton)
         storage.registerEntity('Account', Account, {
             replaceExisting: true,
         });

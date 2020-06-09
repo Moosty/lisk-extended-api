@@ -1,7 +1,7 @@
 {
   "name": "@moosty/lisk-extended-api",
-  "version": "0.0.7",
-  "description": "",
+  "version": "0.0.8",
+  "description": "Extended api for filtering on assets",
   "main": "dist-node/index.js",
   "repository": {
     "type": "git",
@@ -10,19 +10,14 @@
   "author": "Moosty <info@moosty.com>",
   "license": "GPL-3.0",
   "scripts": {
-    "test": "jest --coverage --verbose",
-    "test:ci": "jest --config ./jest.config.js",
     "prebuild": "rm -r dist-node | rm tsconfig.tsbuildinfo | mkdir dist-node | true",
     "build": "tsc",
     "build:check": "node -e \"require('./dist-node')\""
   },
   "dependencies": {
-    "@liskhq/lisk-cryptography": "^2.5.0-alpha.0",
-    "@liskhq/lisk-transactions": "^4.0.0-alpha.0",
-    "@liskhq/lisk-validator": "^0.4.0-alpha.0",
     "cors": "^2.8.5",
-    "lisk-framework": "^0.6.0-alpha.0",
-    "lisk-sdk": "^4.0.0-alpha.0",
+    "lisk-sdk": "^3.0.1",
+    "lodash": "^4.17.15",
     "tslib": "^1.10.0"
   },
   "devDependencies": {

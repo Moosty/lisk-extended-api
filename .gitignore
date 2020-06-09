@@ -9,6 +9,7 @@ yarn.lock
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 junit.xml
+dist-node
 
 # Runtime data
 pids
@@ -114,3 +115,4 @@ dist/
 .DS_Store
 .project
 __MACOSX/
+
