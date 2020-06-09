@@ -12,7 +12,7 @@ import { ExtendedHTTPApiModule } from "@moosty/lisk-extended-api";
 app.registerModule(ExtendedHTTPApiModule, {
   port: 1234, // default 2020 
   limit: 1000, // default 100
-  assets: [
+  assets: [ // allowed assets
     'recipientId',
     'unit.total',
   ],
@@ -33,6 +33,7 @@ Asset exists in `transaction` or `account`
 `http://localhost:2020/extended-api/accounts?asset=foo`
 
 Asset has specific value:
+
 `http://localhost:2020/extended-api/transactions?asset=foo&contains=bar`
 
 `http://localhost:2020/extended-api/accounts?asset=foo&contains=bar`
