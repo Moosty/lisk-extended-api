@@ -61,6 +61,7 @@ export class ExtendedHTTPApi {
         app.get('/extended-api/:type', async (req, res) => {
             const limit = req.query.limit || 10;
             const offset = req.query.offset || 0;
+            const transactionType = Number(req.query.type) || -1;
             const type = req.params.type === "accounts" ? "Account" : req.params.type === "transactions" ? "Transaction" : null;
             if (!type) {
                 res.send({
@@ -71,13 +72,21 @@ export class ExtendedHTTPApi {
                     let filters: Array<any> = [];
                     if (req.query.asset) {
                         if (!req.query.contains) {
-                            filters.push({asset_exists: req.query.asset});
+                            const filter: any = { asset_exists: req.query.asset };
+                            if (transactionType > -1){
+                                filter.type = transactionType;
+                            }
+                            filters.push(filter);
                         }
                         if (req.query.contains) {
                             let obj = {};
                             const contains = !isNaN(req.query.contains) ? Number(req.query.contains) : req.query.contains;
                             _.set(obj, req.query.asset, contains);
-                            filters.push({asset_contains: JSON.stringify(obj)});
+                            const filter: any = { asset_contains: JSON.stringify(obj) };
+                            if (transactionType > -1){
+                                filter.type = transactionType;
+                            }
+                            filters.push(filter);
                         }
                     }
 
@@ -126,3 +135,4 @@ export class ExtendedHTTPApi {
         this.logger.info('Cleaned up extended HTTP API successfully');
     }
 };
+
