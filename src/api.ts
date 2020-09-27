@@ -53,7 +53,7 @@ export class ExtendedHTTPApi {
 
         // Bootstrap Storage component
         await bootstrapStorage(this.scope, this.options.limit || 100);
-        this.scope.components.storage.entities.Transaction.filters.asset_contains = "asset @> '${asset_contains:value}'::jsonb";
+        this.scope.components.storage.entities.Transaction.filters.asset_contains = "LOWER(asset::jsonb->>'${asset_contains.asset:value}') LIKE LOWER('%${asset_contains.contains:value}%')";
         this.scope.components.storage.entities.Transaction.filters.asset_exists = "asset ? '${asset_exists:value}'";
         this.scope.components.storage.entities.Account.filters.asset_contains = "asset @> '${asset_contains:value}'::jsonb";
         this.scope.components.storage.entities.Account.filters.asset_exists = "asset ? '${asset_exists:value}'";
@@ -81,9 +81,10 @@ export class ExtendedHTTPApi {
                         if (req.query.contains) {
                             let obj = {};
                             const contains = !isNaN(req.query.contains) ? Number(req.query.contains) : req.query.contains;
-                            _.set(obj, req.query.asset, contains);
-                            const filter: any = { asset_contains: JSON.stringify(obj) };
-                            if (transactionType > -1){
+                            _.set(obj, "contains", contains);
+                            _.set(obj, "asset", req.query.asset);
+                            const filter: any = { asset_contains: obj };
+                            if (transactionType > -1) {
                                 filter.type = transactionType;
                             }
                             filters.push(filter);
