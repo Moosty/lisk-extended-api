@@ -41,3 +41,7 @@ Asset has specific value:
 `http://localhost:2020/extended-api/transactions?asset=recipientId&contains=395830482304L&limit=100`
 
 `http://localhost:2020/extended-api/transactions?asset=nested.field&contains=22&offset=0`
+
+Type selection: (Thanks to [@tomploem](https://github.com/tomploem))
+
+`http://localhost:2020/extended-api/transactions?asset=foo&contains=bar&type=31`
